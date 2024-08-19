@@ -43,7 +43,6 @@ class_names = ['Corn___Common_Rust',
 api_key = "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"
 client = Groq(api_key=api_key)
 
-
 # Function to get summary from Groq API
 def get_summary_from_groq(predicted_class):
     try:
@@ -51,7 +50,7 @@ def get_summary_from_groq(predicted_class):
             messages=[
                 {
                     "role": "user",
-                    "content": f"Provide a detailed summary about the plant disease: {predicted_class}.",
+                    "content": f"Provide a detailed solution about the plant disease: {predicted_class}.",
                 }
             ],
             model="llama3-8b-8192",
@@ -60,24 +59,23 @@ def get_summary_from_groq(predicted_class):
     except Exception as e:
         return "No summary available for this disease."
 
-
-# Function to make predictions
-def predict(img):
+# Function to predict with OOD detection
+def predict_with_ood_detection(img, model, threshold=0.5):
     img_array = tf.keras.preprocessing.image.img_to_array(img)
     img_array = tf.expand_dims(img_array, 0)
-
+    
     predictions = model.predict(img_array)
-    predicted_class = class_names[np.argmax(predictions[0])]
-    confidence = round(100 * (np.max(predictions[0])), 2)
-
-    # Get the summary from Groq API
-    summary = get_summary_from_groq(predicted_class)
-
-    return predicted_class, confidence, summary
-
+    max_prob = np.max(predictions)
+    
+    if max_prob < threshold:
+        return "OOD", max_prob, "The image is considered out-of-distribution."
+    else:
+        predicted_class = class_names[np.argmax(predictions[0])]
+        summary = get_summary_from_groq(predicted_class)
+        return predicted_class, max_prob, summary
 
 # Streamlit app
-st.title("Crop Disease Classification")
+st.title("Crop Disease Classification with OOD Detection")
 st.write("Upload an image of the crop.")
 
 # File uploader
@@ -88,12 +86,12 @@ if uploaded_file is not None:
     image = Image.open(uploaded_file)
     st.image(image, caption="Uploaded Image.", use_column_width=True)
 
-    # Predict the class and confidence
-    predicted_class, confidence, summary = predict(image)
+    # Predict the class, confidence, and summary with OOD detection
+    predicted_class, confidence, summary = predict_with_ood_detection(image, model)
 
     # Display the results
-    
     st.write(f"**Predicted Class:** {predicted_class}")
-    st.write(f"**Confidence:** {confidence}%")
+    st.write(f"**Confidence:** {round(confidence * 100, 2)}%")
     st.write("**Summary:**")
     st.write(summary)
+
