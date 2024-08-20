@@ -1,5 +1,7 @@
 # FarmMedic
 
+Live Link=https://farmmedicsih-hhrpkkzvca3hjuaauseiqw.streamlit.app/
+
 FarmMedic is an AI-powered application developed in response to the SIH 2024 Problem Statement 1638, which focuses on providing a quick and effective solution for diagnosing and managing plant diseases and pest infestations in farming. By leveraging machine learning models, FarmMedic offers farmers real-time assistance in identifying issues with their crops through image-based analysis and recommending corrective actions.
 
 ## Problem Statement 1638 - SIH 2024
